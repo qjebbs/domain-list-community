@@ -13,7 +13,6 @@ import (
 
 func gfwlist2Rules(outfile string) error {
 	url := "https://raw.githubusercontent.com/gfwlist/gfwlist/master/gfwlist.txt"
-	// Get the data
 	resp, err := http.Get(url)
 	if err != nil {
 		return err
@@ -25,7 +24,6 @@ func gfwlist2Rules(outfile string) error {
 	if err != nil {
 		return err
 	}
-	// ioutil.WriteFile(output, decoded, 0777)
 	var output bytes.Buffer
 	dict := make(map[string]bool)
 
@@ -41,12 +39,13 @@ func gfwlist2Rules(outfile string) error {
 		}
 		line = strings.TrimSpace(line)
 		result := processor(line)
-		if result != "" {
-			if _, ok := dict[result]; !ok {
-				_, err = output.WriteString(result + "\n")
-				if err != nil {
-					return err
-				}
+		if result == "" {
+			continue
+		}
+		if _, ok := dict[result]; !ok {
+			_, err = output.WriteString(result + "\n")
+			if err != nil {
+				return err
 			}
 		}
 	}
