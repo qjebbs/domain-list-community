@@ -11,6 +11,10 @@ import (
 	"strings"
 )
 
+var customGFWList = `
+v2fly.org
+`
+
 func gfwlist2Rules(outfile string) error {
 	url := "https://raw.githubusercontent.com/gfwlist/gfwlist/master/gfwlist.txt"
 	resp, err := http.Get(url)
@@ -26,6 +30,7 @@ func gfwlist2Rules(outfile string) error {
 	}
 	var output bytes.Buffer
 	dict := make(map[string]bool)
+	decoded = append(decoded, []byte(customGFWList)...)
 
 	reader := bufio.NewReader(bytes.NewReader(decoded))
 	processor := makeProcessor()
