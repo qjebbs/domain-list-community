@@ -10,6 +10,8 @@ import (
 	"strconv"
 	"strings"
 
+	"flag"
+
 	"github.com/golang/protobuf/proto"
 	"v2ray.com/core/app/router"
 )
@@ -202,16 +204,50 @@ func ParseList(list *List, ref map[string]*List) (*ParsedList, error) {
 	return pl, nil
 }
 
+const (
+	flagIutputHelp        = "input folder which contains domain files"
+	flagOutputHelp        = "output file name"
+	flagUpdateGFWListHelp = "update gfwlist file from upstream"
+)
+
 func main() {
-	cwd, _ := os.Getwd()
-	dir := filepath.Join(cwd, "data")
-	err := gfwlist2Rules(filepath.Join(dir, "gfwlist"))
-	if err != nil {
-		fmt.Println("Failed: ", err)
-		return
+	var (
+		flagInputDir      string
+		flagOutputFile    string
+		flagUpdateGFWList bool
+	)
+	flag.StringVar(&flagOutputFile, "output", "", flagOutputHelp)
+	flag.StringVar(&flagOutputFile, "o", "", flagOutputHelp)
+	flag.StringVar(&flagInputDir, "input", "", flagOutputHelp)
+	flag.StringVar(&flagInputDir, "i", "", flagOutputHelp)
+	flag.BoolVar(&flagUpdateGFWList, "update-gfwlist", false, flagOutputHelp)
+	flag.BoolVar(&flagUpdateGFWList, "u", false, flagOutputHelp)
+	flag.Parse()
+
+	if flagInputDir == "" {
+		cwd, _ := os.Getwd()
+		tmp := filepath.Join(cwd, "data")
+		stat, err := os.Stat(tmp)
+		if err == nil && stat.IsDir() {
+			flagInputDir = tmp
+		}
 	}
+	if flagOutputFile == "" {
+		flagOutputFile = "dlc.dat"
+	}
+	fmt.Println("Input:", flagInputDir)
+	if flagUpdateGFWList {
+		gfwlist := filepath.Join(flagInputDir, "gfwlist")
+		fmt.Println("Updating gfwlist domain file...")
+		err := gfwlist2Rules(gfwlist)
+		if err != nil {
+			fmt.Println("Failed: ", err)
+			return
+		}
+	}
+	fmt.Println("Generating...")
 	ref := make(map[string]*List)
-	err = filepath.Walk(dir, func(path string, info os.FileInfo, err error) error {
+	err := filepath.Walk(flagInputDir, func(path string, info os.FileInfo, err error) error {
 		if err != nil {
 			return err
 		}
@@ -249,7 +285,8 @@ func main() {
 		fmt.Println("Failed:", err)
 		return
 	}
-	if err := ioutil.WriteFile("dlc.dat", protoBytes, 0777); err != nil {
+	fmt.Println("Writing to:", flagOutputFile)
+	if err := ioutil.WriteFile(flagOutputFile, protoBytes, 0777); err != nil {
 		fmt.Println("Failed: ", err)
 	}
 }

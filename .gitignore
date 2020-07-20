@@ -1,7 +1,7 @@
 # File created using '.gitignore Generator' for Visual Studio Code: https://bit.ly/vscode-gig
 
+domain-list-community
 dlc.dat
-data/gfwlist
 
 # Created by https://www.gitignore.io/api/macos,visualstudiocode,go
 # Edit at https://www.gitignore.io/?templates=macos,visualstudiocode,go
