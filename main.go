@@ -208,6 +208,7 @@ const (
 	flagIutputHelp        = "input folder which contains domain files"
 	flagOutputHelp        = "output file name"
 	flagUpdateGFWListHelp = "update gfwlist file from upstream"
+	flagVerboseHelp       = "verbose mode"
 )
 
 func main() {
@@ -215,6 +216,7 @@ func main() {
 		flagInputDir      string
 		flagOutputFile    string
 		flagUpdateGFWList bool
+		flagVerbose       bool
 	)
 	flag.StringVar(&flagOutputFile, "output", "", flagOutputHelp)
 	flag.StringVar(&flagOutputFile, "o", "", flagOutputHelp)
@@ -222,6 +224,8 @@ func main() {
 	flag.StringVar(&flagInputDir, "i", "", flagOutputHelp)
 	flag.BoolVar(&flagUpdateGFWList, "update-gfwlist", false, flagOutputHelp)
 	flag.BoolVar(&flagUpdateGFWList, "u", false, flagOutputHelp)
+	flag.BoolVar(&flagVerbose, "verbose", false, flagVerboseHelp)
+	flag.BoolVar(&flagVerbose, "v", false, flagVerboseHelp)
 	flag.Parse()
 
 	if flagInputDir == "" {
@@ -235,7 +239,9 @@ func main() {
 	if flagOutputFile == "" {
 		flagOutputFile = "dlc.dat"
 	}
-	fmt.Println("Input:", flagInputDir)
+	if flagVerbose {
+		fmt.Println("Input:", flagInputDir)
+	}
 	if flagUpdateGFWList {
 		gfwlist := filepath.Join(flagInputDir, "gfwlist")
 		fmt.Println("Updating gfwlist domain file...")
@@ -245,7 +251,9 @@ func main() {
 			return
 		}
 	}
-	fmt.Println("Generating...")
+	if flagVerbose {
+		fmt.Println("Generating...")
+	}
 	ref := make(map[string]*List)
 	err := filepath.Walk(flagInputDir, func(path string, info os.FileInfo, err error) error {
 		if err != nil {
@@ -285,7 +293,9 @@ func main() {
 		fmt.Println("Failed:", err)
 		return
 	}
-	fmt.Println("Writing to:", flagOutputFile)
+	if flagVerbose {
+		fmt.Println("Writing to:", flagOutputFile)
+	}
 	if err := ioutil.WriteFile(flagOutputFile, protoBytes, 0777); err != nil {
 		fmt.Println("Failed: ", err)
 	}
